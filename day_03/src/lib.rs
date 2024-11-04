@@ -3,7 +3,7 @@ mod my_io {
     use std::io::prelude::*;
     use std::io::Error as IOError;
 
-    pub fn read_file_to_string(file_path: &str) -> Result<String,IOError> {
+    pub fn read_file_to_string(file_path: &str) -> Result<String, IOError> {
         let mut s: String = String::new();
         let mut file: File = File::open(file_path)?;
         file.read_to_string(&mut s)?;
@@ -13,11 +13,31 @@ mod my_io {
 
 pub use my_io::read_file_to_string;
 
-
 pub fn run(text: &str) -> u64 {
-    0
+    text.lines()
+        .map(|line| (&line[0..line.len() / 2], &line[line.len() / 2..line.len()]))
+        .inspect(|(comp1, comp2)| println!("{comp1}, {comp2}"))
+        .map(get_duplicate)
+        .map(priority)
+        .sum()
 }
 
+fn get_duplicate((comp1, comp2): (&str, &str)) -> char {
+    comp1
+        .chars()
+        .flat_map(|c| comp2.find(c.clone()).and_then(|_i| Some(c)))
+        .last()
+        .expect("always has a duplicate")
+}
+
+fn priority(c: char) -> u64 {
+    println!("{c}");
+    if c.is_lowercase() {
+        c as u64 - 96
+    } else {
+        c as u64 - 38
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -25,39 +45,26 @@ mod tests {
     #[test]
     fn practice_run() {
         let s: &'static str = "\
-seeds: 79 14 55 13
-
-seed-to-soil map:
-50 98 2
-52 50 48
-
-soil-to-fertilizer map:
-0 15 37
-37 52 2
-39 0 15
-
-fertilizer-to-water map:
-49 53 8
-0 11 42
-42 0 7
-57 7 4
-
-water-to-light map:
-88 18 7
-18 25 70
-
-light-to-temperature map:
-45 77 23
-81 45 19
-68 64 13
-
-temperature-to-humidity map:
-0 69 1
-1 0 69
-
-humidity-to-location map:
-60 56 37
-56 93 4";
-        assert_eq!(46, run(s));
+vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw
+";
+        assert_eq!(157, run(s));
+    }
+    #[test]
+    fn test_duplicated() {
+        let t = get_duplicate(("vJrwpWtwJgWr", "hcsFMMfFFhFp"));
+        assert_eq!('p', t);
+    }
+    #[test]
+    fn test_priority() {
+        assert_eq!(16, priority('p'));
+        assert_eq!(38, priority('L'));
+        assert_eq!(42, priority('P'));
+        assert_eq!(22, priority('v'));
+        assert_eq!(20, priority('t'));
     }
 }
