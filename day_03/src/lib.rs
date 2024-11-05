@@ -22,10 +22,26 @@ pub fn run(text: &str) -> u64 {
         .sum()
 }
 
+pub fn run2(text: &str) -> u64 {
+    text.lines()
+        .collect::<Vec<_>>()
+        .chunks(3)
+        .map(get_truplicate)
+        .map(priority)
+        .sum()
+}
 fn get_duplicate((comp1, comp2): (&str, &str)) -> char {
     comp1
         .chars()
-        .flat_map(|c| comp2.find(c.clone()).and_then(|_i| Some(c)))
+        .flat_map(|c| comp2.find(c).and_then(|_i| Some(c)))
+        .last()
+        .expect("always has a duplicate")
+}
+fn get_truplicate(groups: &[&str]) -> char {
+    groups[0]
+        .chars()
+        .flat_map(|c| groups[1].find(c).and_then(|_i| Some(c)))
+        .flat_map(|c| groups[2].find(c).and_then(|_i| Some(c)))
         .last()
         .expect("always has a duplicate")
 }
@@ -55,9 +71,31 @@ CrZsJsPPZsGzwwsLwLmpwMDw
         assert_eq!(157, run(s));
     }
     #[test]
+    fn practice_run2() {
+        let s: &'static str = "\
+vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw
+";
+        assert_eq!(70, run2(s));
+    }
+    #[test]
     fn test_duplicated() {
         let t = get_duplicate(("vJrwpWtwJgWr", "hcsFMMfFFhFp"));
         assert_eq!('p', t);
+    }
+    #[test]
+    fn test_truplicated() {
+        let lin: &[&str] = &[
+            "vJrwpWtwJgWrhcsFMMfFFhFp",
+            "jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL",
+            "PmmdzqPrVvPwwTWBwg",
+        ];
+        let t = get_truplicate(lin);
+        assert_eq!('r', t);
     }
     #[test]
     fn test_priority() {
